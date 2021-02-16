@@ -1,11 +1,13 @@
 # Copyright (c) 2020 Gitpod GmbH. All rights reserved.
 # Licensed under the MIT License. See License-MIT.txt in the project root for license information.
 
-<<<<<<< HEAD
 version: "0.7.0-beta1"
+<<<<<<< HEAD
 =======
 version: 0.6.0
 >>>>>>> 7e4e4807 (dev)
+=======
+>>>>>>> 11e0d45d (dev)
 
 hostname: localhost
 # ingressModes determines how Gitpod makes workspaces and their ports available. Possible values are:
