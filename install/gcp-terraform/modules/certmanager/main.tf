@@ -3,10 +3,14 @@
  * Licensed under the MIT License. See License-MIT.txt in the project root for license information.
  */
 
+resource "random_id" "certmanager" {
+  byte_length = 4
+}
+
 #
 resource "google_service_account" "certmanager" {
-  account_id   = var.certmanager.name
-  display_name = var.certmanager.name
+  account_id   = "${var.certmanager.name}-${random_id.certmanager.hex}"
+  display_name = "${var.certmanager.name}-${random_id.certmanager.hex}"
   description  = "Cert-Manager Account ${var.certmanager.name}"
   project      = var.project
 }

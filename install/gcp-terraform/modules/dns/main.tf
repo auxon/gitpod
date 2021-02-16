@@ -10,6 +10,8 @@ locals {
     "dns.googleapis.com",
     "compute.googleapis.com"
   ]
+  region = trimsuffix(var.location,local.zone_suffix)
+  zone_suffix = regex("-[a-z]$",var.location)
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/dns_managed_zone
@@ -30,7 +32,7 @@ data "google_dns_managed_zone" "gitpod" {
 resource "google_compute_address" "gitpod" {
   name    = var.name
   project = var.project
-  region  = var.region
+  region  = local.region
 }
 
 resource "google_dns_record_set" "gitpod" {

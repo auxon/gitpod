@@ -1,7 +1,7 @@
 # Copyright (c) 2020 Gitpod GmbH. All rights reserved.
 # Licensed under the MIT License. See License-MIT.txt in the project root for license information.
 
-version: "0.7.0"
+version: "0.7.0-beta1"
 
 hostname: localhost
 # ingressModes determines how Gitpod makes workspaces and their ports available. Possible values are:
@@ -506,8 +506,8 @@ docker-registry:
 minio:
   enabled: true
   fullnameOverride: minio
-  accessKey: # create random accesskey and secretkey
-  secretKey: # create random accesskey and secretkey
+  accessKey: sadsadasdsd # create random accesskey and secretkey
+  secretKey: sduasgagiffg # create random accesskey and secretkey
   serviceAccount:
     create: true
     name: minio
@@ -518,16 +518,23 @@ minio:
 
 mysql:
   enabled: true
-  fullnameOverride: mysql
-  testFramework:
-    enabled: false
-  existingSecret: db-password
-  serviceAccount:
-    name: db
-  extraVolumes: |
-    - name: init-scripts
-      configMap:
-        name: db-init-scripts
-  extraVolumeMounts: |
-    - mountPath: /docker-entrypoint-initdb.d
-      name: init-scripts
+  mysqlRootPassword: test
+  initializationFiles:
+    init.sql: |-
+      GRANT ALL ON `gitpod%`.* TO "gitpod"@"%";
+      CREATE DATABASE IF NOT EXISTS `gitpod-sessions` CHARSET utf8mb4;
+      USE `gitpod-sessions`;
+      CREATE TABLE IF NOT EXISTS sessions (
+        `session_id` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+        `expires` int(11) unsigned NOT NULL,
+        `data` text COLLATE utf8mb4_bin,
+        `_lastModified` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+        PRIMARY KEY (`session_id`)
+      );
+      SET @gitpodDB = IFNULL(@gitpodDB, '`gitpod`');
+      SET @statementStr = CONCAT('DROP DATABASE IF EXISTS ', @gitpodDB);
+      PREPARE statement FROM @statementStr;
+      EXECUTE statement;
+      SET @statementStr = CONCAT('CREATE DATABASE ', @gitpodDB, ' CHARSET utf8mb4');
+      PREPARE statement FROM @statementStr;
+      EXECUTE statement;

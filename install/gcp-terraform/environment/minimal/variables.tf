@@ -12,12 +12,6 @@ variable "location" {
   type = string
 }
 
-variable "container_registry" {
-  type = object({
-    location = string
-  })
-}
-
 variable "zone_name" {
   type = string
 }

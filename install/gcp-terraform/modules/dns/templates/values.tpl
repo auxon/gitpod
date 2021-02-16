@@ -5,6 +5,7 @@ ingressMode: hosts
 hostname: ${hostname}
 components:
   proxy:
+    serviceType: LoadBalancer
     loadBalancerIP: ${loadBalancerIP}
 
 branding:

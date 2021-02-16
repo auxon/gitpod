@@ -8,10 +8,6 @@ variable "project" {
   type = string
 }
 
-variable "region" {
-  type = string
-}
-
 variable "database_values" {
   type    = string
   default = ""
@@ -49,6 +45,7 @@ variable "values" {
 
 variable "gitpod" {
   type = object({
+    repository   = string
     chart        = string
     version      = string
     image_prefix = string
