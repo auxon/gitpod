@@ -1,0 +1,9 @@
+dependencies:
+- name: docker-registry
+  repository: https://helm.twun.io
+  version: 1.10.0
+- name: minio
+  repository: https://helm.min.io/
+  version: 8.0.7
+digest: sha256:f6449895731b876ec426aa3510cc64093bd927027b9025fd8fc11521701b6203
+generated: "2021-02-04T13:25:20.4532463+01:00"

@@ -11,7 +11,10 @@ dependencies:
   version: 8.0.7
   repository: https://helm.min.io/
   condition: minio.enabled
+<<<<<<< HEAD
 - name: mysql
   version: 1.6.9
   repository: "file://./charts/mysql"
   condition: mysql.enabled
+=======
+>>>>>>> 7e4e4807 (dev)
