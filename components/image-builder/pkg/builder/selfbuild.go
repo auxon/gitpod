@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	docker "github.com/docker/docker/client"
@@ -21,8 +22,8 @@ import (
 )
 
 const (
-	selfbuildDockerfile = `
-FROM alpine:3.9
+	selfbuildDockerfileTemplate = `
+FROM alpine
 
 # Add gitpod user for operations (e.g. checkout because of the post-checkout hook!)
 RUN addgroup -g 33333 gitpod \
@@ -38,7 +39,7 @@ RUN mkdir /gitpod-layer && cd /gitpod-layer && tar xzfv /gitpodLayer.tar.gz
 )
 
 // SelfBuild builds the image of itself which the image builder requires to work
-func SelfBuild(ctx context.Context, rep, gitpodLayerLoc string, client *docker.Client) (ref string, err error) {
+func SelfBuild(ctx context.Context, rep, gitpodLayerLoc, alpineImage string, client *docker.Client) (ref string, err error) {
 	rd, wr := io.Pipe()
 
 	gplayerhash, err := computeGitpodLayerHash(gitpodLayerLoc)
@@ -53,7 +54,7 @@ func SelfBuild(ctx context.Context, rep, gitpodLayerLoc string, client *docker.C
 
 	errchan := make(chan error)
 	go func() {
-		errchan <- writeSelfBuildContext(wr, gitpodLayerLoc)
+		errchan <- writeSelfBuildContext(wr, gitpodLayerLoc, alpineImage)
 	}()
 
 	ref = fmt.Sprintf("%s:%s", rep, hash)
@@ -134,7 +135,7 @@ func computeSelfbuildHash(gitpodLayerHash string) (string, error) {
 	return fmt.Sprintf("%x", hash.Sum([]byte{})), nil
 }
 
-func writeSelfBuildContext(o io.WriteCloser, gitpodLayerLoc string) (err error) {
+func writeSelfBuildContext(o io.WriteCloser, gitpodLayerLoc, alpineImage string) (err error) {
 	defer o.Close()
 
 	self, err := os.Executable()
@@ -194,15 +195,17 @@ func writeSelfBuildContext(o io.WriteCloser, gitpodLayerLoc string) (err error) 
 		return xerrors.Errorf("cannot write selfbuild context: %w", err)
 	}
 
+	dockerfile := selfbuildDockerfile(alpineImage)
+
 	err = arc.WriteHeader(&tar.Header{
 		Name: "Dockerfile",
-		Size: int64(len(selfbuildDockerfile)),
+		Size: int64(len(dockerfile)),
 		Mode: 0755,
 	})
 	if err != nil {
 		return xerrors.Errorf("cannot write selfbuild context: %w", err)
 	}
-	_, err = arc.Write([]byte(selfbuildDockerfile))
+	_, err = arc.Write([]byte(dockerfile))
 	if err != nil {
 		return xerrors.Errorf("cannot write selfbuild context: %w", err)
 	}
@@ -210,4 +213,11 @@ func writeSelfBuildContext(o io.WriteCloser, gitpodLayerLoc string) (err error) 
 	log.Debug("self-build context sent")
 
 	return nil
+}
+
+func selfbuildDockerfile(alpineImage string) string {
+	if len(alpineImage) > 0 {
+		return strings.Replace(selfbuildDockerfileTemplate, "alpine", alpineImage, 1)
+	}
+	return selfbuildDockerfileTemplate
 }

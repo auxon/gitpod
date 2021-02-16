@@ -28,6 +28,9 @@
         "workdir"
       ],
       "properties": {
+        "alpineImage": {
+          "type": "string"
+        },
         "baseImageRepository": {
           "type": "string"
         },
